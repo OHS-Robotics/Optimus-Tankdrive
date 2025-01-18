@@ -27,6 +27,7 @@ public class Robot extends TimedRobot {
   private final SparkMax m_rightMotor = new SparkMax(3, SparkLowLevel.MotorType.kBrushed);
   private final SparkMax m_leftBackMotor = new SparkMax(2, SparkLowLevel.MotorType.kBrushed);
   private final SparkMax m_rightBackMotor = new SparkMax(4, SparkLowLevel.MotorType.kBrushed);
+  private final SparkMax m_coralLoader = new SparkMax(6, SparkLowLevel.MotorType.kBrushed);
   private final DifferentialDrive m_robotDrive =
       new DifferentialDrive(m_leftMotor::set, m_rightMotor::set);
   private final XboxController m_driverController = new XboxController(0);
@@ -59,7 +60,13 @@ public class Robot extends TimedRobot {
     // That means that the Y axis of the left stick moves the left side
     // of the robot forward and backward, and the Y axis of the right stick
     // moves the right side of the robot forward and backward.
-    System.out.println("9jadwuih9huj98fe89f");
     m_robotDrive.tankDrive(-m_driverController.getLeftY(), -m_driverController.getRightY());
+
+    if (m_driverController.getYButtonPressed()) {
+      m_coralLoader.set(.5);
+
+    } else {
+      m_coralLoader.set(0.0);
+    }
   }
 }
