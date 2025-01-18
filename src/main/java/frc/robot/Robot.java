@@ -36,11 +36,11 @@ public class Robot extends TimedRobot {
     // SendableRegistry.addChild(m_robotDrive, m_leftMotor);
     // SendableRegistry.addChild(m_robotDrive, m_rightMotor);
     var lbc = new SparkMaxConfig();
-    // lbc.follow(1);
-    m_leftMotor.configure(lbc, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    lbc.follow(1);
+    m_leftMotor.configure(lbc, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
     var rbc = new SparkMaxConfig();
-    // rbc.follow(3);
-    m_rightMotor.configure(rbc, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    rbc.follow(3);
+    m_rightMotor.configure(rbc, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
     SendableRegistry.addChild(m_robotDrive, m_leftMotor);
     SendableRegistry.addChild(m_robotDrive, m_rightMotor);
     SendableRegistry.addChild(m_robotDrive, m_leftBackMotor);
