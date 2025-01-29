@@ -17,6 +17,9 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkBase.PersistMode;
+import edu.wpi.first.wpilibj.I2C.Port;
+
+import frc.robot.external.LIDARLite;
 
 /**
  * This is a demo program showing the use of the DifferentialDrive class. Runs the motors with tank
@@ -31,6 +34,9 @@ public class Robot extends TimedRobot {
   private final DifferentialDrive m_robotDrive =
       new DifferentialDrive(m_leftMotor::set, m_rightMotor::set);
   private final XboxController m_driverController = new XboxController(0);
+  private final LIDARLite lidar = new LIDARLite(Port.kOnboard);
+
+  private boolean coralLoaderRunning = false;
 
   /** Called once at the beginning of the robot program. */
   public Robot() {
@@ -47,11 +53,23 @@ public class Robot extends TimedRobot {
     SendableRegistry.addChild(m_robotDrive, m_rightMotor);
     SendableRegistry.addChild(m_robotDrive, m_leftBackMotor);
     SendableRegistry.addChild(m_robotDrive, m_rightBackMotor);
+
+    // lidar.startMeasuring();
     
     // We need to invert one side of the drivetrain so that positive voltages
     // result in both sides moving forward. Depending on how your robot's
     // gearbox is constructed, you might have to invert the left side instead.
-    m_rightMotor.setInverted(true);
+    // m_rightMotor.setInverted(true);
+  }
+
+  @Override
+  public void disabledInit() {
+    lidar.stopMeasuring();
+  }
+
+  @Override
+  public void teleopInit() {
+    lidar.startMeasuring();
   }
 
   @Override
@@ -62,11 +80,23 @@ public class Robot extends TimedRobot {
     // moves the right side of the robot forward and backward.
     m_robotDrive.tankDrive(-m_driverController.getLeftY(), -m_driverController.getRightY());
 
+    int dist = lidar.getDistance();
+
     if (m_driverController.getYButtonPressed()) {
+      coralLoaderRunning = !coralLoaderRunning;
+    }
+
+    if (coralLoaderRunning && dist < 65) {
+      coralLoaderRunning = false;
+    }
+
+    if (coralLoaderRunning) {
       m_coralLoader.set(.5);
 
     } else {
       m_coralLoader.set(0.0);
     }
+
+    System.out.println(dist);
   }
 }
