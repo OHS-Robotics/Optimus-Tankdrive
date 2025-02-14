@@ -28,8 +28,8 @@ import frc.robot.external.LIDARLite;
 public class Robot extends TimedRobot {
   private final SparkMax m_leftMotor = new SparkMax(1, SparkLowLevel.MotorType.kBrushed);
   private final SparkMax m_rightMotor = new SparkMax(3, SparkLowLevel.MotorType.kBrushed);
-  private final SparkMax m_leftBackMotor = new SparkMax(2, SparkLowLevel.MotorType.kBrushed);
-  private final SparkMax m_rightBackMotor = new SparkMax(4, SparkLowLevel.MotorType.kBrushed);
+  private final SparkMax m_leftBackMotor = new SparkMax(4, SparkLowLevel.MotorType.kBrushed);
+  private final SparkMax m_rightBackMotor = new SparkMax(2, SparkLowLevel.MotorType.kBrushed);
   private final SparkMax m_coralLoader = new SparkMax(6, SparkLowLevel.MotorType.kBrushed);
   private final DifferentialDrive m_robotDrive =
       new DifferentialDrive(m_leftMotor::set, m_rightMotor::set);
@@ -80,15 +80,18 @@ public class Robot extends TimedRobot {
     // moves the right side of the robot forward and backward.
     m_robotDrive.tankDrive(-m_driverController.getLeftY(), -m_driverController.getRightY());
 
-    int dist = lidar.getDistance();
+    // int dist = lidar.getDistance();
 
     if (m_driverController.getYButtonPressed()) {
       coralLoaderRunning = !coralLoaderRunning;
     }
 
-    if (coralLoaderRunning && dist < 65) {
+    if (m_driverController.getBButtonPressed()) coralLoaderRunning = true;
+    if (m_driverController.getBButtonReleased()) coralLoaderRunning = false;
+
+    /*if (coralLoaderRunning && dist < 65) {
       coralLoaderRunning = false;
-    }
+    }*/
 
     if (coralLoaderRunning) {
       m_coralLoader.set(.5);
@@ -97,6 +100,5 @@ public class Robot extends TimedRobot {
       m_coralLoader.set(0.0);
     }
 
-    System.out.println(dist);
   }
 }
