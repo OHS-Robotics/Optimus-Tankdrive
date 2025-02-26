@@ -18,6 +18,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import edu.wpi.first.wpilibj.I2C.Port;
+import edu.wpi.first.hal.simulation.DriverStationDataJNI;
 
 import frc.robot.external.LIDARLite;
 
@@ -37,6 +38,8 @@ public class Robot extends TimedRobot {
   private final LIDARLite lidar = new LIDARLite(Port.kOnboard);
 
   private boolean coralLoaderRunning = false;
+
+  private int disableAccumulator = 0;
 
   /** Called once at the beginning of the robot program. */
   public Robot() {
@@ -78,7 +81,14 @@ public class Robot extends TimedRobot {
     // That means that the Y axis of the left stick moves the left side
     // of the robot forward and backward, and the Y axis of the right stick
     // moves the right side of the robot forward and backward.
-    m_robotDrive.tankDrive(-m_driverController.getLeftY(), -m_driverController.getRightY());
+    m_robotDrive.tankDrive(m_driverController.getLeftY() * 0.3, m_driverController.getRightY() * 0.3);
+    if (m_driverController.getRightBumperButton()) {
+      DriverStationDataJNI.setEStop(true);
+    }
+    if (m_driverController.getLeftBumperButton()) disableAccumulator++;
+    else disableAccumulator = 0;
+
+    if (disableAccumulator > (1 / (20/1000)) * 3) DriverStationDataJNI.setEStop(true); // if the disable accumulator has been held for more than 3 seconds, disable the emergency stop
 
     // int dist = lidar.getDistance();
 
