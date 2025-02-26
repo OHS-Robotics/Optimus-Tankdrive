@@ -19,7 +19,7 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.hal.simulation.DriverStationDataJNI;
-
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import frc.robot.external.LIDARLite;
 
 /**
@@ -40,6 +40,10 @@ public class Robot extends TimedRobot {
   private boolean coralLoaderRunning = false;
 
   private int disableAccumulator = 0;
+
+  // Creates a SlewRateLimiter that limits the rate of change of the signal to 0.5 units per second
+  private SlewRateLimiter leftSRL = new SlewRateLimiter(0.5);
+  private SlewRateLimiter rightSRL = new SlewRateLimiter(0.5);
 
   /** Called once at the beginning of the robot program. */
   public Robot() {
@@ -81,7 +85,13 @@ public class Robot extends TimedRobot {
     // That means that the Y axis of the left stick moves the left side
     // of the robot forward and backward, and the Y axis of the right stick
     // moves the right side of the robot forward and backward.
-    m_robotDrive.tankDrive(m_driverController.getLeftY() * 0.8, m_driverController.getRightY() * 0.8);
+
+    // Calculates the next value of the output
+    double filteredLeft = leftSRL.calculate(m_driverController.getLeftY() * 0.8);
+    double filteredRight = rightSRL.calculate(m_driverController.getRightY() * 0.8);
+
+    m_robotDrive.tankDrive(filteredLeft, filteredRight);
+
     if (m_driverController.getRightBumperButton()) {
       DriverStationDataJNI.setEStop(true);
     }
