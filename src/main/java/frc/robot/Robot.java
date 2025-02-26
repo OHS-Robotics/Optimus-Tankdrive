@@ -81,14 +81,14 @@ public class Robot extends TimedRobot {
     // That means that the Y axis of the left stick moves the left side
     // of the robot forward and backward, and the Y axis of the right stick
     // moves the right side of the robot forward and backward.
-    m_robotDrive.tankDrive(m_driverController.getLeftY() * 0.3, m_driverController.getRightY() * 0.3);
+    m_robotDrive.tankDrive(m_driverController.getLeftY() * 0.8, m_driverController.getRightY() * 0.8);
     if (m_driverController.getRightBumperButton()) {
       DriverStationDataJNI.setEStop(true);
     }
     if (m_driverController.getLeftBumperButton()) disableAccumulator++;
     else disableAccumulator = 0;
 
-    if (disableAccumulator > (1 / (20/1000)) * 3) DriverStationDataJNI.setEStop(true); // if the disable accumulator has been held for more than 3 seconds, disable the emergency stop
+    if (disableAccumulator > (int) ((1.0 / (20.0/1000.0)) * 3.0)) DriverStationDataJNI.setEStop(true); // if the disable accumulator has been held for more than 3 seconds, disable the emergency stop
 
     // int dist = lidar.getDistance();
 
