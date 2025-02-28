@@ -56,9 +56,18 @@ public class Robot extends TimedRobot {
     //lbc.follow(1);
     m_leftMotor.configure(lbc, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
     var rbc = new SparkMaxConfig();
-    //rbc.follow(3);
+    // rbc.follow(3);
     rbc.inverted(true);
     m_rightMotor.configure(rbc, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+
+    lbc = new SparkMaxConfig();
+    lbc.follow(m_leftMotor);
+    m_leftBackMotor.configure(lbc, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+
+    rbc = new SparkMaxConfig();
+    rbc.follow(m_rightMotor);
+    m_rightBackMotor.configure(rbc, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+
     SendableRegistry.addChild(m_robotDrive, m_leftMotor);
     SendableRegistry.addChild(m_robotDrive, m_rightMotor);
     SendableRegistry.addChild(m_robotDrive, m_leftBackMotor);
@@ -110,6 +119,8 @@ public class Robot extends TimedRobot {
       if (m_driverController.getPOV() == 0) m_robotDrive.tankDrive(-speed, -speed);
       else if (m_driverController.getPOV() == 180) m_robotDrive.tankDrive(speed, speed);
       else m_robotDrive.tankDrive(filteredLeft, filteredRight);
+
+      // m_leftBackMotor.set(0.2);
 
       if (m_driverController.getLeftTriggerAxis() > 0.2) speed -= 0.005;
       if (m_driverController.getRightTriggerAxis() > 0.2) speed += 0.005;
