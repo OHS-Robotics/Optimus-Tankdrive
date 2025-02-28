@@ -38,12 +38,15 @@ public class Robot extends TimedRobot {
   private final LIDARLite lidar = new LIDARLite(Port.kOnboard);
 
   private boolean coralLoaderRunning = false;
+  private double speed = 0.5;
+  private boolean run = true;
 
-  private int disableAccumulator = 0;
+  private int enableAccumulator = 0;
+  private final int enableThreshold = (int) ((1.0 / (20.0/1000.0)) * 3.0);
 
   // Creates a SlewRateLimiter that limits the rate of change of the signal to 0.5 units per second
-  private SlewRateLimiter leftSRL = new SlewRateLimiter(0.5);
-  private SlewRateLimiter rightSRL = new SlewRateLimiter(0.5);
+  private SlewRateLimiter leftSRL = new SlewRateLimiter(2.0);
+  private SlewRateLimiter rightSRL = new SlewRateLimiter(2.0);
 
   /** Called once at the beginning of the robot program. */
   public Robot() {
@@ -87,37 +90,57 @@ public class Robot extends TimedRobot {
     // moves the right side of the robot forward and backward.
 
     // Calculates the next value of the output
-    double filteredLeft = leftSRL.calculate(m_driverController.getLeftY() * 0.8);
-    double filteredRight = rightSRL.calculate(m_driverController.getRightY() * 0.8);
-
-    m_robotDrive.tankDrive(filteredLeft, filteredRight);
+    double filteredLeft = leftSRL.calculate(m_driverController.getLeftY() * speed);
+    double filteredRight = rightSRL.calculate(m_driverController.getRightY() * speed);
 
     if (m_driverController.getRightBumperButton()) {
-      DriverStationDataJNI.setEStop(true);
+      run = false;
+      System.out.println("emergency stop!");
     }
-    if (m_driverController.getLeftBumperButton()) disableAccumulator++;
-    else disableAccumulator = 0;
+    if (m_driverController.getLeftBumperButton()) enableAccumulator++;
+    else enableAccumulator = 0;
 
-    if (disableAccumulator > (int) ((1.0 / (20.0/1000.0)) * 3.0)) DriverStationDataJNI.setEStop(true); // if the disable accumulator has been held for more than 3 seconds, disable the emergency stop
+    if (enableAccumulator > enableThreshold) run = true; // if the enable accumulator has been held for more than 3 seconds, enable the emergency stop
 
-    // int dist = lidar.getDistance();
+    if (run) {
+      // Drive with tank drive.
+      // That means that the Y axis of the left stick moves the left side
+      // of the robot forward and backward, and the Y axis of the right stick
+      // moves the right side of the robot forward and backward.
+      if (m_driverController.getPOV() == 0) m_robotDrive.tankDrive(-speed, -speed);
+      else if (m_driverController.getPOV() == 180) m_robotDrive.tankDrive(speed, speed);
+      else m_robotDrive.tankDrive(filteredLeft, filteredRight);
 
-    if (m_driverController.getYButtonPressed()) {
-      coralLoaderRunning = !coralLoaderRunning;
+      if (m_driverController.getLeftTriggerAxis() > 0.2) speed -= 0.005;
+      if (m_driverController.getRightTriggerAxis() > 0.2) speed += 0.005;
+      speed = Math.max(0.01, Math.min(0.5, speed));
+
+      // int dist = lidar.getDistance();
+
+      if (m_driverController.getYButtonPressed()) {
+        coralLoaderRunning = !coralLoaderRunning;
+      }
+
+      if (m_driverController.getBButtonPressed()) coralLoaderRunning = true;
+      if (m_driverController.getBButtonReleased()) coralLoaderRunning = false;
+
+      /*if (coralLoaderRunning && dist < 65) {
+        coralLoaderRunning = false;
+      }*/
+
+      if (coralLoaderRunning) {
+        m_coralLoader.set(.5);
+
+      } else {
+        m_coralLoader.set(0.0);
+      }
     }
-
-    if (m_driverController.getBButtonPressed()) coralLoaderRunning = true;
-    if (m_driverController.getBButtonReleased()) coralLoaderRunning = false;
-
-    /*if (coralLoaderRunning && dist < 65) {
-      coralLoaderRunning = false;
-    }*/
-
-    if (coralLoaderRunning) {
-      m_coralLoader.set(.5);
-
-    } else {
-      m_coralLoader.set(0.0);
+    else {
+      System.out.println(String.format("Stopped, %d / %d", enableAccumulator, enableThreshold));
+      m_rightMotor.set(0);
+      m_leftMotor.set(0);
+      m_leftBackMotor.set(0);
+      m_rightBackMotor.set(0.0);
     }
 
   }
